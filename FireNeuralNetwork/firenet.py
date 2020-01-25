@@ -23,7 +23,8 @@ from tflearn.layers.estimator import regression
 
 ################################################################################
 
-def construct_firenet (x,y, training=False):
+
+def construct_firenet(x, y, training=False):
 
     # Build network as per architecture in [Dunnings/Breckon, 2018]
 
@@ -58,8 +59,8 @@ def construct_firenet (x,y, training=False):
 
     if(training):
         network = regression(network, optimizer='momentum',
-                            loss='categorical_crossentropy',
-                            learning_rate=0.001)
+                             loss='categorical_crossentropy',
+                             learning_rate=0.001)
 
     # constuct final model
 
@@ -70,16 +71,17 @@ def construct_firenet (x,y, training=False):
 
 ################################################################################
 
+
 if __name__ == '__main__':
 
-################################################################################
+    ################################################################################
 
     # construct and display model
 
-    model = construct_firenet (224, 224, training=False)
+    model = construct_firenet(224, 224, training=False)
     print("Constructed FireNet ...")
 
-    model.load(os.path.join("models/FireNet", "firenet"),weights_only=True)
+    model.load(os.path.join("models/FireNet", "firenet"), weights_only=True)
     print("Loaded CNN network weights ...")
 
 ################################################################################
@@ -91,74 +93,70 @@ if __name__ == '__main__':
 
     # display and loop settings
 
-    windowName = "Live Fire Detection - FireNet CNN";
-    keepProcessing = True;
+    windowName = "Live Fire Detection - FireNet CNN"
+    keepProcessing = True
 
 ################################################################################
 
-    if len(sys.argv) == 2:
+    # load video file from first command line argument
 
-        # load video file from first command line argument
+    video = cv2.VideoCapture(0)
+    print("Loaded camera ...")
+    # create window
 
-        video = cv2.VideoCapture(sys.argv[1])
-        print("Loaded video ...")
+    cv2.namedWindow(windowName, cv2.WINDOW_NORMAL)
 
-        # create window
+    # get video properties
+    width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = video.get(cv2.CAP_PROP_FPS)
+    frame_time = round(1000/30)
 
-        cv2.namedWindow(windowName, cv2.WINDOW_NORMAL);
+    while (keepProcessing):
 
-        # get video properties
+         # start a timer (to see how long processing and display takes)
 
-        width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH));
-        height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = video.get(cv2.CAP_PROP_FPS)
-        frame_time = round(1000/fps);
+        start_t = cv2.getTickCount()
 
-        while (keepProcessing):
+          # get video frame from file, handle end of file
 
-            # start a timer (to see how long processing and display takes)
+        ret, frame = video.read()
+        if not ret:
+            print("... end of video file reached")
+            break
 
-            start_t = cv2.getTickCount();
+        # re-size image to network input size and perform prediction
 
-            # get video frame from file, handle end of file
+        small_frame = cv2.resize(frame, (rows, cols), cv2.INTER_AREA)
+        output = model.predict([small_frame])
 
-            ret, frame = video.read()
-            if not ret:
-                print("... end of video file reached");
-                break;
+        # label image based on prediction
 
-            # re-size image to network input size and perform prediction
-
-            small_frame = cv2.resize(frame, (rows, cols), cv2.INTER_AREA)
-            output = model.predict([small_frame])
-
-            # label image based on prediction
-
-            if round(output[0][0]) == 1:
-                cv2.rectangle(frame, (0,0), (width,height), (0,0,255), 50)
-                cv2.putText(frame,'FIRE',(int(width/16),int(height/4)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 4,(255,255,255),10,cv2.LINE_AA);
-            else:
-                cv2.rectangle(frame, (0,0), (width,height), (0,255,0), 50)
-                cv2.putText(frame,'CLEAR',(int(width/16),int(height/4)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 4,(255,255,255),10,cv2.LINE_AA);
+        if round(output[0][0]) == 1:
+            cv2.rectangle(frame, (0, 0), (width, height), (0, 0, 255), 50)
+            cv2.putText(frame, 'FIRE', (int(width/16), int(height/4)),
+            cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 255), 10, cv2.LINE_AA)
+        else:
+            cv2.rectangle(frame, (0, 0), (width, height), (0, 255, 0), 50)
+            cv2.putText(frame, 'CLEAR', (int(width/16), int(height/4)),
+            cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 255), 10, cv2.LINE_AA)
 
             # stop the timer and convert to ms. (to see how long processing and display takes)
 
-            stop_t = ((cv2.getTickCount() - start_t)/cv2.getTickFrequency()) * 1000;
+        stop_t = ((cv2.getTickCount() - start_t) /
+                cv2.getTickFrequency()) * 1000
 
             # image display and key handling
 
-            cv2.imshow(windowName, frame);
+        cv2.imshow(windowName, frame)
 
             # wait fps time or less depending on processing time taken (e.g. 1000ms / 25 fps = 40 ms)
 
-            key = cv2.waitKey(max(2, frame_time - int(math.ceil(stop_t)))) & 0xFF;
-            if (key == ord('x')):
-                keepProcessing = False;
-            elif (key == ord('f')):
-                cv2.setWindowProperty(windowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
-    else:
-        print("usage: python firenet.py videofile.ext");
+        key = cv2.waitKey(
+            max(2, frame_time - int(math.ceil(stop_t)))) & 0xFF
+        if (key == ord('x')):
+            keepProcessing = False
+        elif (key == ord('f')):
+            cv2.setWindowProperty(windowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
 ################################################################################
