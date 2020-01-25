@@ -10,11 +10,31 @@
 MPU6050 IMU;
 
 // PWM Values for Each Motor [0, 255]
-int16_t left_motor_speed;
-int16_t right_motor_speed;
+int16_t left_motor_speed = 0;
+int16_t right_motor_speed = 0;
 
+// accelerometer readings
 int16_t x, y, z;
-float current_angle;
+
+// angles
+float current_angle = 0;
+float last_angle = 0;
+float set_angle = 0;
+
+// errors
+float this_error = 0;
+float last_error = 0;
+float error_sum = 0;
+
+// PID Constants
+unsigned int kp = 40;
+unsigned int ki = 40;
+float kd = 0.05;
+
+// timing
+unsigned long last_update = 0;
+unsigned long update_interval = 5;
+float update_interval_s = 0.005;
 
 void setup() {
 
@@ -35,16 +55,21 @@ void setup() {
 }
 
 void loop() {
-  if (IMU.testConnection()) {
+  // execute every 5ms
+  if ((millis() - last_update) >= 5) {
+
+
+    // calculate the current angle
     x = IMU.getAccelerationX();
     y = IMU.getAccelerationY();
-    z = IMU.getAccelerationZ();
     current_angle = atan2(x, y) * RAD_TO_DEG;
-    Serial.print("Angle: ");
-    Serial.print(current_angle);
-    Serial.println("º");
+    this_error = current_angle - set_angle;
+    error_sum += this_error;
+
+    left_motor_speed = kp * (this_error) + ki * (error_sum) * update_interval_s - kd * (current_angle - last_angle) / update_interval_s;
+    right_motor_speed = left_motor_speed;
+    last_angle = current_angle;
   }
-  delay(1000);
 }
 
 void updateMotors() {
