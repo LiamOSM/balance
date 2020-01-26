@@ -8,7 +8,7 @@
 #define right_motor_B 11
 
 // uncomment for serial debugging output
-//#define debug
+#define debug
 
 MPU6050 IMU;
 
@@ -17,12 +17,18 @@ int left_motor_speed = 0;
 int right_motor_speed = 0;
 
 // accelerometer readings
-int16_t x, y, z;
+int16_t accx, accy, accz;
+int16_t gyrox, gyroy, gyroz;
 
 // angles
+float acc_angle = 0;
+float gyro_angle = 0;
+
 float current_angle = 0;
 float last_angle = 0;
 float set_angle = 102.0;
+
+int gyro_rate = 0;
 
 // errors
 float this_error = 0;
@@ -62,15 +68,17 @@ void setup() {
 }
 
 void loop() {
+  //ramp_motors();
   // execute every 5ms
-  if ((millis() - last_update) >= 10) {
+  if ((millis() - last_update) >= 500) {
     last_update = millis();
 
     // calculate the current angle
     // x = IMU.getAccelerationX();
-    y = IMU.getAccelerationY();
-    z = IMU.getAccelerationZ();
-    current_angle = atan2(y, z) * RAD_TO_DEG;
+    accy = IMU.getAccelerationY();
+    accz = IMU.getAccelerationZ();
+    acc_angle = atan2(accy, accz) * RAD_TO_DEG;
+    current_angle = acc_angle;
 
 #ifdef debug
     Serial.print("Current angle: ");
@@ -81,7 +89,6 @@ void loop() {
     this_error = current_angle - set_angle;
     error_sum += this_error;
     left_motor_speed = kp * (this_error);
-    left_motor_speed = constrain(left_motor_speed, -255, 255);
     right_motor_speed = left_motor_speed;
     last_angle = current_angle;
     update_motors();
@@ -90,10 +97,7 @@ void loop() {
 
 void update_motors() {
   // set left motor speed
-#ifdef debug
-  Serial.print("Motor speed: ");
-  Serial.println(left_motor_speed);
-#endif
+  left_motor_speed = constrain(left_motor_speed, -255, 255);
   if (left_motor_speed < 0) {
     digitalWrite(left_motor_A, LOW);
     analogWrite(left_motor_B, abs(left_motor_speed));
@@ -104,6 +108,7 @@ void update_motors() {
   }
 
   // set right motor speed
+  right_motor_speed = constrain(right_motor_speed, -255, 255);
   if (right_motor_speed < 0) {
     digitalWrite(right_motor_A, LOW);
     analogWrite(right_motor_B, abs(right_motor_speed));
@@ -111,5 +116,27 @@ void update_motors() {
   else {
     digitalWrite(right_motor_B, LOW);
     analogWrite(right_motor_A, right_motor_speed);
+  }
+
+#ifdef debug
+  Serial.print("Motor speed: ");
+  Serial.println(left_motor_speed);
+#endif
+}
+
+void ramp_motors() {
+  while (1) {
+    for (int i = -255; i < 255; i++) {
+      left_motor_speed = i;
+      right_motor_speed = i;
+      update_motors();
+      delay(25);
+    }
+    for (int i = 255; i > -255; i--) {
+      left_motor_speed = i;
+      right_motor_speed = i;
+      update_motors();
+      delay(25);
+    }
   }
 }
