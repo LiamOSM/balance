@@ -7,6 +7,9 @@
 #define right_motor_A 10
 #define right_motor_B 11
 
+// uncomment for serial debugging output
+//#define debug
+
 MPU6050 IMU;
 
 // PWM Values for Each Motor [0, 255]
@@ -48,10 +51,14 @@ void setup() {
   IMU.initialize();
 
   if (!IMU.testConnection()) {
+#ifdef debug
     Serial.println("Failed to connect");
+#endif
     while (1) {}
   }
+#ifdef debug
   Serial.println("Setup successful, beginning control loop");
+#endif
 }
 
 void loop() {
@@ -65,13 +72,16 @@ void loop() {
     z = IMU.getAccelerationZ();
     current_angle = atan2(y, z) * RAD_TO_DEG;
 
-    //    Serial.print("Current angle: ");
-    //    Serial.print(current_angle);
-    //    Serial.print("\tError: ");
-    //    Serial.println(this_error);
+#ifdef debug
+    Serial.print("Current angle: ");
+    Serial.print(current_angle);
+    Serial.print("\tError: ");
+    Serial.println(this_error);
+#endif
     this_error = current_angle - set_angle;
     error_sum += this_error;
-    left_motor_speed = kp * (this_error) + ki * (error_sum) * 0.005 - kd * (current_angle - last_angle) / 0.005;
+    left_motor_speed = kp * (this_error);
+    left_motor_speed = constrain(left_motor_speed, -255, 255);
     right_motor_speed = left_motor_speed;
     last_angle = current_angle;
     update_motors();
