@@ -183,21 +183,25 @@
 	function move_fwd(){
 		data_movement = 'F';
 		UI_movement_display.textContent = updateMovement();
+		doSend("Forward");
 	}
 
 	function move_bwd(){
 		data_movement = 'B';
 		UI_movement_display.textContent = updateMovement();
+		doSend("Backward");
 	}
 
 	function move_right(){
 		data_movement = 'R';
 		UI_movement_display.textContent = updateMovement();
+		doSend("Right");
 	}
 
 	function move_left(){
 		data_movement = 'L';
 		UI_movement_display.textContent = updateMovement();
+		doSend("Left");
 	}
 
 
@@ -239,7 +243,6 @@
 	window.addEventListener("load", init, false);
 	// init();
 	loop();
-
 
 	// .........................................
 	
