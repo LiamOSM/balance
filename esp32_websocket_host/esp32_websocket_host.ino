@@ -5,7 +5,7 @@
  
 // Constants
 const char *ssid = "ESP32-AP";
-const char *password =  "1234";
+const char *password =  "123456789";
 const char *msg_toggle_led = "toggleLED";
 const char *msg_get_led = "getLEDState";
 const int dns_port = 53;
@@ -59,42 +59,45 @@ void onWebSocketEvent(uint8_t client_num,
       Serial.printf("[%u] Received text: %s\n", client_num, payload);
  
       // Toggle LED
-      moveState = 0;
-      Serial.printf(" Direction: %u\n", moveState);
+//      direction = 0;
+//      Serial.printf(" Direction: %u\n", direction);
       
       if (strcmp((char *)payload, "Forward") == 0){
-        moveState = 1;
-        Serial.printf(" Direction: %u\n", moveState);
+        direction = 1;
+        Serial.printf(" Direction: %u\n", direction);
       }
       else if (strcmp((char *)payload, "Right") == 0){
-        moveState = 2;
-        Serial.printf(" Direction: %u\n", moveState);
+        direction = 2;
+        Serial.printf(" Direction: %u\n", direction);
       }
       else if (strcmp((char *)payload, "Backward") == 0){
-        moveState = 3;
-        Serial.printf(" Direction: %u\n", moveState);
+        direction = 3;
+        Serial.printf(" Direction: %u\n", direction);
       }
       else if (strcmp((char *)payload, "Left") == 0){
-        moveState = 4;
-        Serial.printf(" Direction: %u\n", moveState);
+        direction = 4;
+        Serial.printf(" Direction: %u\n", direction);
+      }
+      else {
+        Serial.println("[%u] Message not recognized");
       }
       
-//      if ( strcmp((char *)payload, "toggleLED") == 0 ) {
-//        led_state = led_state ? 0 : 1;
-//        Serial.printf("Toggling LED to %u\n", led_state);
-//        digitalWrite(led_pin, led_state);
-// 
-//      // Report the state of the LED
-//      } else if ( strcmp((char *)payload, "getLEDState") == 0 ) {
-//        sprintf(msg_buf, "%d", led_state);
-//        Serial.printf("Sending to [%u]: %s\n", client_num, msg_buf);
-//        webSocket.sendTXT(client_num, msg_buf);
-// 
-//      // Message not recognized
-//      } else {
-//        Serial.println("[%u] Message not recognized");
-//      }
-        break;
+      if ( strcmp((char *)payload, "toggleLED") == 0 ) {
+        led_state = led_state ? 0 : 1;
+        Serial.printf("Toggling LED to %u\n", led_state);
+        digitalWrite(led_pin, led_state);
+ 
+      // Report the state of the LED
+      } else if ( strcmp((char *)payload, "getLEDState") == 0 ) {
+        sprintf(msg_buf, "%d", led_state);
+        Serial.printf("Sending to [%u]: %s\n", client_num, msg_buf);
+        webSocket.sendTXT(client_num, msg_buf);
+ 
+      // Message not recognized
+      } else {
+        Serial.println("[%u] Message not recognized");
+      }
+      break;
  
     // For everything else: do nothing
     case WStype_BIN:
@@ -113,7 +116,7 @@ void onIndexRequest(AsyncWebServerRequest *request) {
   IPAddress remote_ip = request->client()->remoteIP();
   Serial.println("[" + remote_ip.toString() +
                   "] HTTP GET request of " + request->url());
-  request->send(SPIFFS, "/index.html", "text/html");
+  request->send(SPIFFS, "/sigmple.html", "text/html");
 }
  
 // Callback: send style sheet
@@ -178,8 +181,8 @@ void setup() {
 }
  
 void loop() {
-  moveState = 0;
-  Serial.printf(" Direction: %u\n", moveState);
+//  direction = 0;
+//  Serial.printf(" Direction: %u\n", direction);
   // Look for and handle WebSocket data
   webSocket.loop();
 }
