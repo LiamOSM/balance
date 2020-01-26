@@ -22,7 +22,7 @@ body{
 }
 
 .controller{
-  margin-top: 100px;
+  margin-top: 350px;
   height: 200px;
   width: 400px;
   background-color: white;
@@ -40,6 +40,10 @@ body{
   box-shadow: -15px 8px 15px rgba(0,0,0,0.2);
 }
 
+.crossLeft:hover, .crossRight:hover, .crossTop:hover, .crossBottom:hover{
+	background-color: red;
+}
+
 .controllerRight{
   height: 250px;
   width: 250px;
@@ -47,7 +51,7 @@ body{
   position: relative;
   border-radius: 100%;
   margin-right: -125px;
-  border: solid 15px rgba(230, 230, 230,1);
+  /*border: solid 15px rgba(230, 230, 230,1);*/
   box-shadow: 15px 8px 15px rgba(0,0,0,0.2);
 }
 
@@ -247,9 +251,9 @@ body{
 .cable{
   background-color: black;
   width: 10px;
-  height: 150px;
+  height: 350px;
   position: absolute;
   margin-left: 49.7%;
-  margin-top: -100px;
+  margin-top: -350px;
   box-shadow: 7px 8px 15px rgba(0,0,0,0.2);
 }
