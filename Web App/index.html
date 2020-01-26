@@ -81,9 +81,7 @@
 <!-- Javascript -->
 
 <script type="text/javascript">
-
-	var url = "ws://<insert uC-server's IP address>/";
-	// var output;
+	var url = "ws://192.168.4.1/";	// ESP32 IP address
 
 	// [UI] Assign Data Elements
 	var UI_time_display = document.getElementById("time-display");
@@ -109,16 +107,6 @@
 		// [UI] Assign Data Elements
 		UI_angle_display = document.getElementById("angle-display");
 		UI_movement_display = document.getElementById("movement-display");
-
-		// Draw circle in canvas
-		canvas = document.getElementById("led");
-	    context = canvas.getContext("2d");
-	    context.arc(25, 25, 15, 0, Math.PI * 2, false);
-	    context.lineWidth = 3;
-	    context.strokeStyle = "black";
-	    context.stroke();
-	    context.fillStyle = "black";
-	    context.fill();
 
 		// Connect to WebSocket server
     	wsConnect(url);
