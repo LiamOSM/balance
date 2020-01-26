@@ -1,0 +1,247 @@
+
+<!-- DeltaHacks VI 2020: LS, RS, US, BL -->
+
+<!-- File: HTML UI served by ESP32 uC for relaying commands -->
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<html>
+<head>
+	<title>Balance</title>
+	<link rel="stylesheet" type="text/css" href="./style.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+	<!-- CONTROLLER -->
+	<!-- https://codepen.io/Illusion/pen/dopjOx -->
+	<div class=cable></div>
+	<div class=controller>
+	  <div class=centerBlue>
+	    <div class=centerLeft></div>   
+	    <div class=centerRight></div>  
+	  </div>
+	  <div class=centerStart>
+	    <div class=SLeft></div>
+	    <div class=SRight></div>
+	  </div>
+	  <div class=centerSelect>
+	    <div class=SLeft></div>
+	    <div class=SRight></div>
+	  </div>
+	 
+	  <div class=controllerLeft>
+	    <div class=circle></div>
+	    <div class=crossCenter>
+	      <div class=crossTop id=crossTop onclick="move_fwd()"></div>
+	      <div class=crossBottom id=crossBottom onclick="move_bwd()"></div>
+	      <div class=crossLeft id=crossLeft onclick="move_left()"></div>
+	      <div class=crossRight id=crossRight onclick="move_right()"></div>
+	      <div class=crossCircle></div>
+	    </div>
+	  </div>
+	  <div class=controllerRight>
+	    <div class=backButton1Center>
+	      <div class= cornerLeft1></div>
+	      <div class= cornerRight1></div>
+	    </div>
+	    <div class=backButton2Center>
+	      <div class= cornerLeft2></div>
+	      <div class= cornerRight2></div>
+	    </div>
+	  </div>
+	</div>
+
+	<!-- elapsed-time display -->
+	<h1 class='data-disp' id='time-display'><time>00:00:00</time></h1>
+
+	<!-- angle display -->
+	<h1 class='data-disp' id='angle-display'>Angle: 0.0000</h1>
+
+	<!-- movement-dir callback -->
+	<h1 class='data-disp' id='movement-display'>Movement: 0</h1>
+
+	<!-- CONTROLS -->
+	<button class='control btn btn-info' onclick='move_fwd()' id='fwd-btn'>FWD</button>
+	<button class='control btn btn-info' onclick='move_bwd()' id='bwd-btn'>BWD</button>
+	<button class='control btn btn-info' onclick='move_left()' id='left-btn'>L</button>
+	<button class='control btn btn-info' onclick='move_right()' id='right-btn'>R</button>
+
+	<!-- DEMO -->
+	<!-- <table>
+	    <tr>
+	        <td><button id="toggleButton" onclick="onPress()">Toggle LED</button></td>
+	        <td><canvas id="led" width="50" height="50"></canvas></td>
+	    </tr>
+	</table> -->
+
+</body>
+</html>
+
+
+<!-- Javascript -->
+
+<script type="text/javascript">
+
+	var url = "ws://<insert uC-server's IP address>/";
+	// var output;
+
+	// [UI] Assign Data Elements
+	var UI_time_display = document.getElementById("time-display");
+	var UI_angle_display = document.getElementById("angle-display");
+	var UI_movement_display = document.getElementById("movement-display");
+	
+	var UI_left = document.getElementById("left-btn");
+	var UI_right = document.getElementById("right-btn");
+	var UI_fwd = document.getElementById("fwd-btn");
+	var UI_bwd = document.getElementById("bwd-btn");
+
+	var canvas;
+	var context;
+
+	// [Data] variables  
+	var data_time = 0;
+	var data_angle = 0;
+	var data_movement = "still";
+	var seconds = 0, minutes = 0, hours = 0, t;
+		
+	// This is called when the page finishes loading
+	function init(){
+		// [UI] Assign Data Elements
+		UI_angle_display = document.getElementById("angle-display");
+		UI_movement_display = document.getElementById("movement-display");
+
+		// Draw circle in canvas
+		canvas = document.getElementById("led");
+	    context = canvas.getContext("2d");
+	    context.arc(25, 25, 15, 0, Math.PI * 2, false);
+	    context.lineWidth = 3;
+	    context.strokeStyle = "black";
+	    context.stroke();
+	    context.fillStyle = "black";
+	    context.fill();
+
+		// Connect to WebSocket server
+    	wsConnect(url);
+	}
+
+	// Call this to connect to the WebSocket server
+	function wsConnect(url) {
+	    websocket = new WebSocket(url);
+	    // Assign callbacks
+	    websocket.onopen = function(evt) { onOpen(evt) };
+	    websocket.onclose = function(evt) { onClose(evt) };
+	    websocket.onmessage = function(evt) { onMessage(evt) };
+	    websocket.onerror = function(evt) { onError(evt) };
+	}
+
+	// Called when a WebSocket connection is established with the server
+	function onOpen(evt) {
+	    // Log connection state
+	    console.log("Connected");
+	    // Get the current state of [angle, movement]
+	    doSend("getLEDState");
+	}
+
+	// Called when the WebSocket connection is closed
+	function onClose(evt) {
+	 
+	    // Log disconnection state
+	    console.log("Disconnected");
+	    
+	    // Disable button
+	    //button.disabled = true;
+	    
+	    // Try to reconnect after a few seconds
+	    setTimeout(function() { wsConnect(url) }, 2000);
+	}
+
+	// Called when a message is received from the server
+	function onMessage(evt) {
+	    // Print out our received message
+	    console.log("Received: " + evt.data);
+
+	    // MUST SPEC the data-format for [angle, motion-data]
+		    /* Update circle graphic with LED state
+		    switch(evt.data) {
+		        case "0":
+		            console.log("LED is off");
+		            break;
+		    } */
+	}
+
+	// Called when a WebSocket error occurs
+	function onError(evt) { console.log("ERROR: " + evt.data); }
+	 
+	// Sends a message to the server (and prints it to the console)
+	function doSend(message) {
+	    console.log("Sending: " + message);
+	    websocket.send(message);
+	}
+
+
+	// CONTROL
+	function move_fwd(){
+		data_movement = 'fwd';
+		UI_movement_display.textContent = updateMovement();
+	}
+
+	function move_bwd(){
+		data_movement = 'bwd';
+		UI_movement_display.textContent = updateMovement();
+	}
+
+	function move_right(){
+		data_movement = 'rgt';
+		UI_movement_display.textContent = updateMovement();
+	}
+
+	function move_left(){
+		data_movement = 'lft';
+		UI_movement_display.textContent = updateMovement();
+	}
+
+
+	// CANVAS
+	function loop() {
+	    t = setTimeout(draw, 1000);
+	}
+
+	function draw() {
+	    UI_time_display.textContent = updateTime();
+		UI_angle_display.textContent = updateAngle();
+	    loop();
+	}
+
+	function updateTime(){
+		// https://jsfiddle.net/Daniel_Hug/pvk6p/
+	    seconds++;
+	    if (seconds >= 60) {
+	        seconds = 0; minutes++;
+	        if (minutes >= 60) 
+	            minutes = 0; hours++;
+	    }
+	    return (hours ? (hours > 9 ? hours : "0" + hours) : "00") + ":" + (minutes ? (minutes > 9 ? minutes : "0" + minutes) : "00") + ":" + (seconds > 9 ? seconds : "0" + seconds);
+	}
+
+	function updateAngle(){
+		// instead of a text-display, try making a bar-graphic
+		return "Angle: " + (Math.random() * (0.120 - 0.0200) + 0.0200).toFixed(4);
+	}
+
+	function updateMovement(){
+		return "Movement: " + data_movement;
+	}
+	
+
+
+
+	// TEST BENCH ..............................
+	window.addEventListener("load", init, false);
+	// init();
+	loop();
+
+
+	// .........................................
+	
+</script>
