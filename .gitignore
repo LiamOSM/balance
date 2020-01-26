@@ -1,0 +1,11 @@
+
+.DS_Store
+*.data-00000-of-00001
+FireNeuralNetwork/models/FireNet/firenet.index
+FireNeuralNetwork/models/FireNet/firenet.meta
+FireNeuralNetwork/models/InceptionV1-OnFire/inceptiononv1onfire.index
+FireNeuralNetwork/models/InceptionV1-OnFire/inceptiononv1onfire.meta
+FireNeuralNetwork/models/README.txt
+FireNeuralNetwork/models/SP-InceptionV1-OnFire/sp-inceptiononv1onfire.index
+FireNeuralNetwork/models/SP-InceptionV1-OnFire/sp-inceptiononv1onfire.meta
+FireNeuralNetwork/models/test.mp4
