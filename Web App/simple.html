@@ -4,6 +4,7 @@
 
 <head>
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <script language="javascript" type="text/javascript">
@@ -15,9 +16,9 @@ var canvas;
 var context;
 
 // [UI] Assign Data Elements
-var UI_time_display = document.getElementById("time-display");
-var UI_angle_display = document.getElementById("angle-display");
-var UI_movement_display = document.getElementById("movement-display");
+var UI_time_display;
+var UI_angle_display;
+var UI_movement_display;
 
 var UI_left = document.getElementById("left-btn");
 var UI_right = document.getElementById("right-btn");
@@ -34,10 +35,15 @@ var seconds = 0, minutes = 0, hours = 0, t;
 // This is called when the page finishes loading
 function init() {
 
+    UI_movement_display = document.getElementById("movement-display");
+    UI_time_display = document.getElementById("time-display");
+    UI_angle_display = document.getElementById("angle-display");
+
     // Assign page elements to variables
     button = document.getElementById("toggleButton");
     output = document.getElementById("output");
     canvas = document.getElementById("led");
+
     
     // Connect to WebSocket server
     wsConnect(url);
@@ -126,25 +132,25 @@ function onPress() {
 // CONTROL
 function move_fwd(){
     data_movement = 'F';
-    // UI_movement_display.textContent = updateMovement();
+    UI_movement_display.textContent = updateMovement();
     doSend("Forward");
 }
 
 function move_bwd(){
     data_movement = 'B';
-    // UI_movement_display.textContent = updateMovement();
+    UI_movement_display.textContent = updateMovement();
     doSend("Backward");
 }
 
 function move_right(){
     data_movement = 'R';
-    // UI_movement_display.textContent = updateMovement();
+    UI_movement_display.textContent = updateMovement();
     doSend("Right");
 }
 
 function move_left(){
     data_movement = 'L';
-    // UI_movement_display.textContent = updateMovement();
+    UI_movement_display.textContent = updateMovement();
     doSend("Left");
 }
 // .... [END] CONTROL SIGNALS ....................................
@@ -226,13 +232,26 @@ loop();
   </div>
 </div>
 
+<!-- elapsed-time display -->
+<h1 class='data-disp' id='time-display'><time>00:00:00</time></h1>
+
+<!-- angle display -->
+<h1 class='data-disp' id='angle-display'>Angle: 0.0000</h1>
+
+<!-- movement-dir callback -->
+<h1 class='data-disp' id='movement-display'>Movement: 0</h1>
+
+<!-- CONTROLS -->
+<button class='control btn btn-info' onclick='move_fwd()' id='fwd-btn'>FWD</button>
+<button class='control btn btn-info' onclick='move_bwd()' id='bwd-btn'>BWD</button>
+<button class='control btn btn-info' onclick='move_left()' id='left-btn'>L</button>
+<button class='control btn btn-info' onclick='move_right()' id='right-btn'>R</button>
 
 
-<h2>LED Control</h2>
 
 <table>
     <tr>
-        <td><button id="toggleButton" onclick="onPress()" disabled>Toggle LED</button></td>
+        <td><button class="btn btn-info" id="toggleButton" onclick="onPress()" disabled>Toggle LED</button></td>
         <td><canvas id="led" width="50" height="50"></canvas></td>
     </tr>
 </table>

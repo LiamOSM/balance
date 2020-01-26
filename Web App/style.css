@@ -40,7 +40,11 @@ body{
   box-shadow: -15px 8px 15px rgba(0,0,0,0.2);
 }
 
-.crossLeft:hover, .crossRight:hover, .crossTop:hover, .crossBottom:hover{
+.crossLeft:hover, .crossRight:hover, .crossTop:hover, .crossBottom:hover {
+	background-color: red;
+}
+
+.cornerLeft1:hover, .cornerLeft2:hover, .cornerRight1:hover, .cornerRight2:hover {
 	background-color: red;
 }
 
