@@ -13,8 +13,8 @@
 MPU6050 IMU;
 
 // PWM Values for Each Motor [0, 255]
-int16_t left_motor_speed = 0;
-int16_t right_motor_speed = 0;
+int left_motor_speed = 0;
+int right_motor_speed = 0;
 
 // accelerometer readings
 int16_t x, y, z;
@@ -22,7 +22,7 @@ int16_t x, y, z;
 // angles
 float current_angle = 0;
 float last_angle = 0;
-float set_angle = 103.0;
+float set_angle = 102.0;
 
 // errors
 float this_error = 0;
@@ -30,8 +30,8 @@ float last_error = 0;
 float error_sum = 0;
 
 // PID Constants
-unsigned int kp = 40;
-unsigned int ki = 0;
+unsigned int kp = 10;
+float ki = 0;
 float kd = 0;
 
 // timing
@@ -63,7 +63,7 @@ void setup() {
 
 void loop() {
   // execute every 5ms
-  if ((millis() - last_update) >= 5) {
+  if ((millis() - last_update) >= 10) {
     last_update = millis();
 
     // calculate the current angle
@@ -90,13 +90,17 @@ void loop() {
 
 void update_motors() {
   // set left motor speed
+#ifdef debug
+  Serial.print("Motor speed: ");
+  Serial.println(left_motor_speed);
+#endif
   if (left_motor_speed < 0) {
     digitalWrite(left_motor_A, LOW);
     analogWrite(left_motor_B, abs(left_motor_speed));
   }
   else {
     digitalWrite(left_motor_B, LOW);
-    analogWrite(left_motor_A, abs(left_motor_speed));
+    analogWrite(left_motor_A, left_motor_speed);
   }
 
   // set right motor speed
@@ -106,6 +110,6 @@ void update_motors() {
   }
   else {
     digitalWrite(right_motor_B, LOW);
-    analogWrite(right_motor_A, abs(right_motor_speed));
+    analogWrite(right_motor_A, right_motor_speed);
   }
 }
